@@ -24,13 +24,13 @@ jobs:
 
       - name: Download Media Files
         run: |
-          # Create folder for audio
+          # Create the folder for your audio files
           mkdir -p amapiano
           
           # Download Background Image
           curl -L "https://huggingface.co/datasets/MASHOLA/YOUTUBE/resolve/main/IMAGES/AMAPIANO%20RADIO.png?download=true" -o amapiano.png
           
-          # Download Audio Files into the correct folder
+          # Download Audio Files into the amapiano folder
           curl -L "https://huggingface.co/datasets/MASHOLA/YOUTUBE/resolve/main/MUSIC/AMAPIANO%20RADIO%2001.WAV?download=true" -o amapiano/amapiano1.wav
 
       - name: Restore Stream State
@@ -42,8 +42,6 @@ jobs:
             stream-state-
 
       - name: Run Streamer
-        env:
-          STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
         run: python main.py
 
       - name: Save Stream State
