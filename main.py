@@ -3,18 +3,21 @@ import time
 import os
 
 # --- CONFIGURATION ---
-IMAGE_PATH = "amapiano.png"  # Local file downloaded by GitHub Action
-AUDIO_FOLDER = "amapiano"         # Local folder where songs are stored
-STREAM_URL = "rtmp://x.rtmp.youtube.com/live2"
-STREAM_KEY = os.getenv("STREAM_KEY", "m8tq-7gxk-8rg2-8kbe-80bv") 
-STATE_FILE = "amapianostate.txt"
+IMAGE_PATH = "amapiano.png"
+AUDIO_FOLDER = "amapiano"
+# Ensure the URL ends with a /
+STREAM_URL = "rtmp://x.rtmp.youtube.com/live2/"
+# Priority: 1. Environment Secret, 2. Hardcoded fallback
+STREAM_KEY = os.getenv("STREAM_KEY", "m8tq-7gxk-8rg2-8kbe-80bv")
+STATE_FILE = "state.txt"
 
 def get_last_index():
     if os.path.exists(STATE_FILE):
         try:
             with open(STATE_FILE, "r") as f:
                 return int(f.read().strip())
-        except: return 0
+        except:
+            return 0
     return 0
 
 def save_index(index):
@@ -23,8 +26,14 @@ def save_index(index):
 
 def start_streaming():
     while True:
-        # Get list of downloaded audio files
-        audio_files = sorted([f for f in os.listdir(AUDIO_FOLDER) if f.endswith('.wav')])
+        # Check if directory exists and get files
+        if not os.path.exists(AUDIO_FOLDER):
+            print(f"Error: Folder {AUDIO_FOLDER} not found!")
+            time.sleep(10)
+            continue
+
+        audio_files = sorted([f for f in os.listdir(AUDIO_FOLDER) if f.lower().endswith('.wav')])
+        
         if not audio_files:
             print("No audio files found! Waiting...")
             time.sleep(10)
@@ -32,13 +41,17 @@ def start_streaming():
 
         current_index = get_last_index()
         
+        # If the saved index is out of range (e.g. files were deleted), reset to 0
+        if current_index >= len(audio_files):
+            current_index = 0
+
         for i in range(current_index, len(audio_files)):
             file_path = os.path.join(AUDIO_FOLDER, audio_files[i])
             save_index(i)
             
             print(f"Streaming Local File: {audio_files[i]}")
 
-            # FFmpeg Command optimized for local files
+            # FFmpeg Command
             cmd = [
                 'ffmpeg',
                 '-re',
@@ -50,7 +63,7 @@ def start_streaming():
                 '-maxrate', '3500k',
                 '-bufsize', '7000k',
                 '-pix_fmt', 'yuv420p',
-                '-g', '60',         # Keyframe every 2 seconds (good for YouTube)
+                '-g', '60',
                 '-c:a', 'aac',
                 '-b:a', '128k',
                 '-ar', '44100',
@@ -61,6 +74,7 @@ def start_streaming():
             process = subprocess.Popen(cmd)
             process.wait() 
             
+            # Reset index to 0 if we reached the end of the folder
             if i == len(audio_files) - 1:
                 save_index(0)
 
