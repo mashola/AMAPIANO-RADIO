@@ -5,10 +5,11 @@ import os
 # --- CONFIGURATION ---
 IMAGE_PATH = "amapiano.png"
 AUDIO_FOLDER = "amapiano"
-# Ensure the URL ends with a /
-STREAM_URL = "rtmp://x.rtmp.youtube.com/live2/"
-# Priority: 1. Environment Secret, 2. Hardcoded fallback
-STREAM_KEY = os.getenv("STREAM_KEY", "m8tq-7gxk-8rg2-8kbe-80bv")
+STREAM_URL = "rtmp://x.rtmp.youtube.com/live2"
+
+# Hardcoded Key - The script will only use this string
+STREAM_KEY = "m8tq-7gxk-8rg2-8kbe-80bv" 
+
 STATE_FILE = "state.txt"
 
 def get_last_index():
@@ -25,8 +26,10 @@ def save_index(index):
         f.write(str(index))
 
 def start_streaming():
+    # This joins the URL and Key correctly: rtmp://.../key
+    full_stream_url = f"{STREAM_URL}/{STREAM_KEY}"
+    
     while True:
-        # Check if directory exists and get files
         if not os.path.exists(AUDIO_FOLDER):
             print(f"Error: Folder {AUDIO_FOLDER} not found!")
             time.sleep(10)
@@ -40,8 +43,6 @@ def start_streaming():
             continue
 
         current_index = get_last_index()
-        
-        # If the saved index is out of range (e.g. files were deleted), reset to 0
         if current_index >= len(audio_files):
             current_index = 0
 
@@ -59,26 +60,26 @@ def start_streaming():
                 '-i', file_path,
                 '-c:v', 'libx264',
                 '-preset', 'veryfast',
-                '-b:v', '3500k', 
-                '-maxrate', '3500k',
-                '-bufsize', '7000k',
+                '-b:v', '2500k', 
+                '-maxrate', '2500k',
+                '-bufsize', '5000k',
                 '-pix_fmt', 'yuv420p',
-                '-g', '60',
+                '-g', '50',
                 '-c:a', 'aac',
                 '-b:a', '128k',
                 '-ar', '44100',
                 '-shortest',
-                '-f', 'flv', f"{STREAM_URL}{STREAM_KEY}"
+                '-f', 'flv', 
+                full_stream_url
             ]
 
-            process = subprocess.Popen(cmd)
-            process.wait() 
+            # Use run() to ensure the loop waits for one song to finish before the next
+            subprocess.run(cmd)
             
-            # Reset index to 0 if we reached the end of the folder
             if i == len(audio_files) - 1:
                 save_index(0)
 
-        print("Looping playlist...")
+        print("Playlist finished. Looping...")
         time.sleep(2)
 
 if __name__ == "__main__":
