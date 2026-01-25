@@ -24,13 +24,14 @@ jobs:
 
       - name: Download Media Files
         run: |
-          mkdir -p music
+          # Create folder for audio
+          mkdir -p amapiano
+          
           # Download Background Image
           curl -L "https://huggingface.co/datasets/MASHOLA/YOUTUBE/resolve/main/IMAGES/AMAPIANO%20RADIO.png?download=true" -o amapiano.png
-          # Download Audio Files (Add more lines here if you have more links)
+          
+          # Download Audio Files into the correct folder
           curl -L "https://huggingface.co/datasets/MASHOLA/YOUTUBE/resolve/main/MUSIC/AMAPIANO%20RADIO%2001.WAV?download=true" -o amapiano/amapiano1.wav
-          # Example 2nd song:
-          # curl -L "YOUR_SECOND_LINK" -o music/song2.wav
 
       - name: Restore Stream State
         uses: actions/cache@v3
