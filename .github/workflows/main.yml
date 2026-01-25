@@ -26,9 +26,9 @@ jobs:
         run: |
           mkdir -p music
           # Download Background Image
-          curl -L "https://huggingface.co/datasets/MASHOLA/YOUTUBE/resolve/main/IMAGES/AMAPIANO%20RADIO.png?download=true" -o background.png
+          curl -L "https://huggingface.co/datasets/MASHOLA/YOUTUBE/resolve/main/IMAGES/AMAPIANO%20RADIO.png?download=true" -o amapiano.png
           # Download Audio Files (Add more lines here if you have more links)
-          curl -L "https://huggingface.co/datasets/MASHOLA/YOUTUBE/resolve/main/MUSIC/AMAPIANO%20RADIO%2001.WAV?download=true" -o music/song1.wav
+          curl -L "https://huggingface.co/datasets/MASHOLA/YOUTUBE/resolve/main/MUSIC/AMAPIANO%20RADIO%2001.WAV?download=true" -o music/amapiano1.wav
           # Example 2nd song:
           # curl -L "YOUR_SECOND_LINK" -o music/song2.wav
 
