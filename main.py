@@ -3,11 +3,11 @@ import time
 import os
 
 # --- CONFIGURATION ---
-IMAGE_PATH = "background.png"  # Local file downloaded by GitHub Action
-AUDIO_FOLDER = "music"         # Local folder where songs are stored
-STREAM_URL = "rtmp://a.rtmp.youtube.com/live2/"
+IMAGE_PATH = "amapiano.png"  # Local file downloaded by GitHub Action
+AUDIO_FOLDER = "amapiano"         # Local folder where songs are stored
+STREAM_URL = "rtmp://x.rtmp.youtube.com/live2"
 STREAM_KEY = os.getenv("STREAM_KEY", "m8tq-7gxk-8rg2-8kbe-80bv") 
-STATE_FILE = "state.txt"
+STATE_FILE = "amapianostate.txt"
 
 def get_last_index():
     if os.path.exists(STATE_FILE):
