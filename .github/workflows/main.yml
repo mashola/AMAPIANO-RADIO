@@ -1,0 +1,53 @@
+name: 24/7 Amapiano Radio
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # Auto-restart every 6 hours
+  workflow_dispatch:
+
+jobs:
+  stream:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Download Media Files
+        run: |
+          mkdir -p music
+          # Download Background Image
+          curl -L "https://huggingface.co/datasets/MASHOLA/YOUTUBE/resolve/main/IMAGES/AMAPIANO%20RADIO.png?download=true" -o background.png
+          # Download Audio Files (Add more lines here if you have more links)
+          curl -L "https://huggingface.co/datasets/MASHOLA/YOUTUBE/resolve/main/MUSIC/AMAPIANO%20RADIO%2001.WAV?download=true" -o music/song1.wav
+          # Example 2nd song:
+          # curl -L "YOUR_SECOND_LINK" -o music/song2.wav
+
+      - name: Restore Stream State
+        uses: actions/cache@v3
+        with:
+          path: state.txt
+          key: stream-state-${{ github.run_id }}
+          restore-keys: |
+            stream-state-
+
+      - name: Run Streamer
+        env:
+          STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
+        run: python main.py
+
+      - name: Save Stream State
+        if: always()
+        uses: actions/cache@v3
+        with:
+          path: state.txt
+          key: stream-state-${{ github.run_id }}
