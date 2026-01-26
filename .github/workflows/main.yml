@@ -2,12 +2,19 @@ name: 24/7 Amapiano Radio
 
 on:
   schedule:
-    - cron: '0 */6 * * *' # Auto-restart every 6 hours
+    - cron: '0 */6 * * *' 
   workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
 
 jobs:
   stream:
     runs-on: ubuntu-latest
+    # Set a hard timeout slightly under 6 hours to ensure the next step runs
+    timeout-minutes: 355 
+    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -24,13 +31,8 @@ jobs:
 
       - name: Download Media Files
         run: |
-          # Create the folder for your audio files
           mkdir -p amapiano
-          
-          # Download Background Image
           curl -L "https://huggingface.co/datasets/MASHOLA/YOUTUBE/resolve/main/IMAGES/AMAPIANO%20RADIO.png?download=true" -o amapiano.png
-          
-          # Download Audio Files into the amapiano folder
           curl -L "https://huggingface.co/datasets/MASHOLA/YOUTUBE/resolve/main/MUSIC/AMAPIANO%20RADIO%2001.WAV?download=true" -o amapiano/amapiano1.wav
 
       - name: Restore Stream State
@@ -42,6 +44,7 @@ jobs:
             stream-state-
 
       - name: Run Streamer
+        # This will run until the timeout-minutes hits or it crashes
         run: python main.py
 
       - name: Save Stream State
@@ -50,3 +53,10 @@ jobs:
         with:
           path: state.txt
           key: stream-state-${{ github.run_id }}
+
+      - name: Trigger Next Run
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run "24/7 Amapiano Radio"
